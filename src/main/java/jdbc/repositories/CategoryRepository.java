@@ -1,111 +1,213 @@
-package jdbc.repositories;
-
+ package jdbc.repositories;
 import jdbc.models.Category;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
 public class CategoryRepository {
+    private static final String URL = "jdbc:mysql://localhost:3306/thebelgianbrewerydb";
+    private static final String USERNAME = "elmaz";
+    private static final String PASSWORD = "54321";
 
-    //CRUD operations:
-    //Create (Insert),Read,Update and Delete
-    public void create() {
-    }
+// CRUD operation
+
+// Create (Insert), Read(Select), Update, and Delete
 
     public List<Category> read() {
 
-        //Polymorphism
         List<Category> results = new ArrayList<>();
+
+        Connection connection = null;
+
+        Statement statement = null;
+
+        ResultSet resultSet = null;
         try {
-            Connection connection = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/thebelgianbrewerydb",
-                    "elmaz",
-                    "54321"
-            );
 
-            System.out.println("CONNECT TO DB IN MADE");
-            Statement statement = connection.createStatement();
-            //if this query returns multiple results , then read()method return
-            //either an array or a list
-            String query = "SELECT Id,Category FROM categories";
-            //CTRL +ALT + V then ENTER
-            ResultSet resultSet = statement.executeQuery(query);
-            //STEP 03 : make binding between Java Objects and Tables
+            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
 
+            System.out.println("CONNECTION TO DB IS ESTABLISHED");
+
+            String query = "SELECT * FROM Category";
+
+            statement = connection.createStatement();
+
+            resultSet = statement.executeQuery(query);
             while (resultSet.next()) {
-                System.out.println("ID: " + resultSet.getInt("Id"));
+                int id = resultSet.getInt("id");
+
+                String categoryName = resultSet.getString("category");
+
+                Category category = new Category(id, categoryName);
+
+                results.add(category);
+
             }
 
         } catch (SQLException sqlException) {
-            System.err.println("SQL EXCEPTION: " + sqlException.getMessage());
-        }
 
+            System.out.println("SQL EXCEPTION: " + sqlException.getMessage());
+
+        } finally {
+            try {
+                if (resultSet != null) resultSet.close();
+                if (statement != null) statement.close();
+                if (connection != null) connection.close();
+
+            } catch (SQLException e) {
+
+                e.printStackTrace();
+
+            }
+
+        }
         return results;
     }
+    public void create(Category category) {
 
+        Connection connection = null;
 
-    public void update(int categoryId, String newCategoryName) {
+        PreparedStatement preparedStatement = null;
         try {
-            Connection connection = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/thebelgianbrewerydb",
-                    "elmaz",
-                    "54321"
-            );
 
-            String query = "UPDATE categories SET Category = ? WHERE Id = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, newCategoryName);
-            preparedStatement.setInt(2, categoryId);
+// Устанавливаем соединение с базой данных
 
+            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+
+            System.out.println("CONNECTION TO DB IS ESTABLISHED");
+
+// Создаем SQL запрос для вставки новой записи в таблицу Category
+
+            String query = "INSERT INTO Category (category) VALUES (?)";
+
+// Подготавливаем SQL выражение
+
+            preparedStatement = connection.prepareStatement(query);
+
+// Устанавливаем значение параметра
+
+            preparedStatement.setString(1, category.getTitle());
+
+// Выполняем SQL запрос для вставки записи
             int rowsAffected = preparedStatement.executeUpdate();
-
             if (rowsAffected > 0) {
-                System.out.println("Update successful: " + rowsAffected + " row(s) updated.");
+
+                System.out.println("New category inserted successfully!");
+
             } else {
-                System.out.println("No rows updated.");
+
+                System.out.println("Failed to insert new category!");
+
             }
 
         } catch (SQLException sqlException) {
-            System.err.println("SQL EXCEPTION: " + sqlException.getMessage());
-        }
-    }
-        public void delete(int categoryId){
+
+            System.out.println("SQL EXCEPTION: " + sqlException.getMessage());
+
+        } finally {
             try {
-                Connection connection = DriverManager.getConnection(
-                        "jdbc:mysql://localhost:3306/thebelgianbrewerydb",
-                        "elmaz",
-                        "54321"
-                );
+                if (preparedStatement != null) preparedStatement.close();
+                if (connection != null) connection.close();
 
-                String query = "DELETE FROM categories WHERE Id = ?";
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setInt(1, categoryId);
+            } catch (SQLException e) {
 
-                int rowsAffected = preparedStatement.executeUpdate();
+                e.printStackTrace();
 
-                if (rowsAffected > 0) {
-                    System.out.println("Delete successful: " + rowsAffected + " row(s) deleted.");
-                } else {
-                    System.out.println("No rows deleted.");
-                }
-
-            } catch (SQLException sqlException) {
-                System.err.println("SQL EXCEPTION: " + sqlException.getMessage());
             }
+
         }
     }
+    public void update(Category category) {
 
+        Connection connection = null;
 
+        PreparedStatement statement = null;
+        try {
 
-// public void update(){
+            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
 
-// }
+            System.out.println("CONNECTION TO DB IS ESTABLISHED");
 
-// public void delete(){}
+            String query = "UPDATE Category SET category=? WHERE id=?";
 
-// public void main() {
+            statement = connection.prepareStatement(query);
 
-// }
+// Устанавливаем значения параметров запроса
 
+            statement.setString(1, category.getTitle());
 
+            statement.setInt(2, category.getId());
+
+// Выполняем запрос на обновление данных
+            int rowsUpdated = statement.executeUpdate();
+            if (rowsUpdated > 0) {
+
+                System.out.println("Category with ID " + category.getId() + " was updated successfully.");
+
+            } else {
+
+                System.out.println("No category found with ID " + category.getId() + ". No changes were made.");
+
+            }
+
+        } catch (SQLException sqlException) {
+
+            System.out.println("SQL EXCEPTION: " + sqlException.getMessage());
+
+        } finally {
+            try {
+                if (statement != null) statement.close();
+                if (connection != null) connection.close();
+
+            } catch (SQLException e) {
+
+                e.printStackTrace();
+
+            }
+
+        }
+    }
+    public void delete(int categoryId) {
+
+        Connection connection = null;
+
+        PreparedStatement statement = null;
+        try {
+
+            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+
+            System.out.println("CONNECTION TO DB IS ESTABLISHED");
+
+            String query = "DELETE FROM Category WHERE id=?";
+
+            statement = connection.prepareStatement(query);
+
+            statement.setInt(1, categoryId);
+            int rowsDeleted = statement.executeUpdate();
+            if (rowsDeleted > 0) {
+
+                System.out.println("Category with ID " + categoryId + " deleted successfully.");
+
+            } else {
+
+                System.out.println("No category found with ID " + categoryId + ". No changes were made.");
+
+            }
+
+        } catch (SQLException sqlException) {
+
+            System.out.println("SQL EXCEPTION: " + sqlException.getMessage());
+
+        } finally {
+            try {
+                if (statement != null) statement.close();
+                if (connection != null) connection.close();
+
+            } catch (SQLException e) {
+
+                e.printStackTrace();
+
+            }
+
+        }
+    }
+}

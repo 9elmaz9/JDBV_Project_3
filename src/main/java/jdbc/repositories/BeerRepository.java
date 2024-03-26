@@ -1,97 +1,149 @@
 package jdbc.repositories;
-
-
 import jdbc.models.Beer;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
 public class BeerRepository {
-
-    // Connection URL and credentials
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/thebelgianbrewerydb";
+    private static final String URL = "jdbc:mysql://localhost:3306/thebelgianbrewerydb";
     private static final String USERNAME = "elmaz";
     private static final String PASSWORD = "54321";
-
-    // Method to establish connection to the database
-    private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
-    }
-
-    // Method to create a new beer in the database
-    public void create(String name, int brewerId, int categoryId, float price, int stock, float alcohol) {
-        try (Connection connection = getConnection()) {
-            String query = "INSERT INTO beers (Name, BrewerId, CategoryId, Price, Stock, Alcohol) VALUES (?, ?, ?, ?, ?, ?)";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, name);
-            preparedStatement.setInt(2, brewerId);
-            preparedStatement.setInt(3, categoryId);
-            preparedStatement.setFloat(4, price);
-            preparedStatement.setInt(5, stock);
-            preparedStatement.setFloat(6, alcohol);
-            int rowsAffected = preparedStatement.executeUpdate();
-            System.out.println("Insert successful: " + rowsAffected + " row(s) inserted.");
-        } catch (SQLException e) {
-            System.err.println("SQL Exception: " + e.getMessage());
-        }
-    }
-
-    // Method to retrieve all beers from the database
-    public List<Beer> readAll() {
-        List<Beer> beers = new ArrayList<>();
-        try (Connection connection = getConnection()) {
-            String query = "SELECT Id, Name, BrewerId, CategoryId, Price, Stock, Alcohol FROM beers";
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(query);
+    public List<Beer> read() {
+        List<Beer> results = new ArrayList<>();
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            System.out.println("CONNECTION TO DB IS ESTABLISHED");
+            String query = "SELECT * FROM Beers";
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(query);
             while (resultSet.next()) {
-                Beer beer = new Beer(
-                        resultSet.getInt("Id"),
-                        resultSet.getString("Name"),
-                        resultSet.getInt("BrewerId"),
-                        resultSet.getInt("CategoryId"),
-                        resultSet.getFloat("Price"),
-                        resultSet.getInt("Stock"),
-                        resultSet.getFloat("Alcohol")
-                );
-                beers.add(beer);
+                int id = resultSet.getInt("id");
+                String name = resultSet.getString("name");
+                int brewerId = resultSet.getInt("brewer_id");
+                int categoryId = resultSet.getInt("category_id");
+                float price = resultSet.getFloat("price");
+                int stock = resultSet.getInt("stock");
+                float alcohol = resultSet.getFloat("alcohol");
+                int version = resultSet.getInt("version"); // Добавить версию
+// Добавляем новый экземпляр класса Beer в список результатов
+                Beer beer = new Beer(id, name, brewerId, categoryId, price, stock, alcohol, version);
+                results.add(beer);
             }
-        } catch (SQLException e) {
-            System.err.println("SQL Exception: " + e.getMessage());
+        } catch (SQLException sqlException) {
+            System.out.println("SQL EXCEPTION: " + sqlException.getMessage());
+        } finally {
+            try {
+                if (resultSet != null) resultSet.close();
+                if (statement != null) statement.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-        return beers;
+        return results;
     }
-
-    // Method to update an existing beer in the database
-    public void update(int id, String name, int brewerId, int categoryId, float price, int stock, float alcohol) {
-        try (Connection connection = getConnection()) {
-            String query = "UPDATE beers SET Name = ?, BrewerId = ?, CategoryId = ?, Price = ?, Stock = ?, Alcohol = ? WHERE Id = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, name);
-            preparedStatement.setInt(2, brewerId);
-            preparedStatement.setInt(3, categoryId);
-            preparedStatement.setFloat(4, price);
-            preparedStatement.setInt(5, stock);
-            preparedStatement.setFloat(6, alcohol);
-            preparedStatement.setInt(7, id);
+    public void create(Beer beer) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        try {
+// Устанавливаем соединение с базой данных
+            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            System.out.println("CONNECTION TO DB IS ESTABLISHED");
+// Создаем SQL запрос для вставки новой записи в таблицу Beers
+            String query = "INSERT INTO Beers (name, brewer_id, category_id, price, stock, alcohol, version) VALUES (?, ?, ?, ?, ?, ?, ?)";
+// Подготавливаем SQL выражение
+            preparedStatement = connection.prepareStatement(query);
+// Устанавливаем значения параметров
+            preparedStatement.setString(1, beer.getName());
+            preparedStatement.setInt(2, beer.getBrewerId());
+            preparedStatement.setInt(3, beer.getCategoryId());
+            preparedStatement.setFloat(4, beer.getPrice());
+            preparedStatement.setInt(5, beer.getStock());
+            preparedStatement.setFloat(6, beer.getAlcohol());
+            preparedStatement.setInt(7, beer.getVersion());
+// Выполняем SQL запрос для вставки записи
             int rowsAffected = preparedStatement.executeUpdate();
-            System.out.println("Update successful: " + rowsAffected + " row(s) updated.");
-        } catch (SQLException e) {
-            System.err.println("SQL Exception: " + e.getMessage());
+            if (rowsAffected > 0) {
+                System.out.println("New beer inserted successfully!");
+            } else {
+                System.out.println("Failed to insert new beer!");
+            }
+        } catch (SQLException sqlException) {
+            System.out.println("SQL EXCEPTION: " + sqlException.getMessage());
+        } finally {
+            try {
+                if (preparedStatement != null) preparedStatement.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    // Method to delete a beer from the database
-    public void delete(int id) {
-        try (Connection connection = getConnection()) {
-            String query = "DELETE FROM beers WHERE Id = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, id);
-            int rowsAffected = preparedStatement.executeUpdate();
-            System.out.println("Delete successful: " + rowsAffected + " row(s) deleted.");
-        } catch (SQLException e) {
-            System.err.println("SQL Exception: " + e.getMessage());
+    public void update(Beer beer) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            System.out.println("CONNECTION TO DB IS ESTABLISHED");
+            String query = "UPDATE Beers SET name=?, brewer_id=?, category_id=?, price=?, stock=?, alcohol=?, version=? WHERE id=?";
+            statement = connection.prepareStatement(query);
+// Устанавливаем значения параметров запроса
+            statement.setString(1, beer.getName());
+            statement.setInt(2, beer.getBrewerId());
+            statement.setInt(3, beer.getCategoryId());
+            statement.setFloat(4, beer.getPrice());
+            statement.setInt(5, beer.getStock());
+            statement.setFloat(6, beer.getAlcohol());
+            statement.setInt(7, beer.getVersion());
+            statement.setInt(8, beer.getId());
+// Выполняем запрос на обновление данных
+            int rowsUpdated = statement.executeUpdate();
+            if (rowsUpdated > 0) {
+                System.out.println("Beer with ID " + beer.getId() + " was updated successfully.");
+            } else {
+                System.out.println("No beer found with ID " + beer.getId() + ". No changes were made.");
+            }
+        } catch (SQLException sqlException) {
+            System.out.println("SQL EXCEPTION: " + sqlException.getMessage());
+        } finally {
+            try {
+                if (statement != null) statement.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
+    public void delete(int beerId) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            System.out.println("CONNECTION TO DB IS ESTABLISHED");
+            String query = "DELETE FROM Beers WHERE id=?";
+            statement = connection.prepareStatement(query);
+// Устанавливаем значение параметра запроса
+            statement.setInt(1, beerId);
+// Выполняем запрос на удаление данных
+            int rowsDeleted = statement.executeUpdate();
+            if (rowsDeleted > 0) {
+                System.out.println("Beer with ID " + beerId + " was deleted successfully.");
+            } else {
+                System.out.println("No beer found with ID " + beerId + ". No changes were made.");
+            }
+        } catch (SQLException sqlException) {
+            System.out.println("SQL EXCEPTION: " + sqlException.getMessage());
+        } finally {
+            try {
+                if (statement != null) statement.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

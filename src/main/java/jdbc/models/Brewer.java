@@ -11,7 +11,11 @@ public class Brewer {
 
     private int turnover;
 
-    public Brewer(){}
+    public Brewer(int id, String name, String address, String zipCode, String city, int turnover){}
+
+    public Brewer() {
+
+    }
 
 
     public int getId() {

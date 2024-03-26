@@ -16,8 +16,23 @@ public class Beer {
     private Blob image;
 
 
-    public Beer(int id, String name, int brewerId, int categoryId, float price, int stock, float alcohol){}
+    public Beer(int id, String name, int brewerId, int categoryId, float price, int stock, float alcohol, int i){}
 
+    public Beer() {
+
+    }
+
+    public Beer(int id, String name, int brewerId, int categoryId, float price, int stock, float alcohol, int version, Blob image) {
+        Id = id;
+        this.name = name;
+        this.brewerId = brewerId;
+        this.categoryId = categoryId;
+        this.price = price;
+        this.stock = stock;
+        this.alcohol = alcohol;
+        this.version = version;
+        this.image = image;
+    }
 
     public int getId() {
         return Id;

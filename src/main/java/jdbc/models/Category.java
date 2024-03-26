@@ -5,7 +5,9 @@ public class Category {
 
     private String title ;
 
-    public  Category(){}
+    public  Category(int i, String newCategory){}
+
+
 
     public int getId() {
         return id;
@@ -22,6 +24,10 @@ public class Category {
     public void setTitle(String title) {
         this.title = title;
     }
+
+    public void setName(String testCategory) {
+    }
+
 }
 
 
