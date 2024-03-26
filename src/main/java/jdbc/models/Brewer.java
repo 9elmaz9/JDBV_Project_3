@@ -65,4 +65,16 @@ public class Brewer {
     public void setTurnover(int turnover) {
         this.turnover = turnover;
     }
+
+    @Override
+    public String toString() {
+        return "Brewer{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", address='" + address + '\'' +
+                ", zipCode='" + zipCode + '\'' +
+                ", city='" + city + '\'' +
+                ", turnover=" + turnover +
+                '}';
+    }
 }

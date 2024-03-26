@@ -16,7 +16,7 @@ public class Beer {
     private Blob image;
 
 
-    public Beer(int id, String name, int brewerId, int categoryId, float price, int stock, float alcohol, int i){}
+    public Beer(int id, String name, int brewerId, int categoryId, float price, int stock, float alcohol){}
 
     public Beer() {
 
@@ -104,5 +104,20 @@ public class Beer {
 
     public void setImage(Blob image) {
         this.image = image;
+    }
+
+    @Override
+    public String toString() {
+        return "Beer{" +
+                "Id=" + Id +
+                ", name='" + name + '\'' +
+                ", brewerId=" + brewerId +
+                ", categoryId=" + categoryId +
+                ", price=" + price +
+                ", stock=" + stock +
+                ", alcohol=" + alcohol +
+                ", version=" + version +
+                ", image=" + image +
+                '}';
     }
 }

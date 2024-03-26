@@ -1,11 +1,13 @@
 package jdbc.models;
 
-public class Category {
+public class CategoryId {
     private  int id;
 
     private String title ;
 
-    public  Category(int i, String newCategory){}
+    public CategoryId(int i, String newCategory){
+
+    }
 
 
 
@@ -28,6 +30,13 @@ public class Category {
     public void setName(String testCategory) {
     }
 
+    @Override
+    public String toString() {
+        return "Category{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                '}';
+    }
 }
 
 
