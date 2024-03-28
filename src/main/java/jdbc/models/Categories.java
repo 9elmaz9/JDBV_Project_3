@@ -1,11 +1,11 @@
 package jdbc.models;
 
-public class CategoryId {
+public class Categories {
     private  int id;
 
     private String title ;
 
-    public CategoryId(int i, String newCategory){
+    public Categories(){
 
     }
 
