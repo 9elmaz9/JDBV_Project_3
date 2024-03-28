@@ -5,7 +5,7 @@ public class Categories {
 
     private String title ;
 
-    public Categories(){
+    public Categories(int id, String category){
 
     }
 
